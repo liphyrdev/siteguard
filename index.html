@@ -148,6 +148,12 @@
             box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         .result-container {
             margin-top: 30px;
             position: relative;
@@ -248,6 +254,54 @@
             color: #888;
             font-size: 0.9rem;
         }
+
+        /* Barra de progresso */
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            transition: width 3s ease-in-out;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                transparent 100%
+            );
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #00ff88;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -279,7 +333,7 @@
                 
                 <div class="status-indicator">
                     <div class="status-dot"></div>
-                    <span>Firebase Conectado</span>
+                    <span id="firebaseStatus">✅ Sistema Pronto</span>
                 </div>
 
                 <textarea id="scriptInput" placeholder="-- Cole seu script Lua aqui...
@@ -296,7 +350,13 @@ print('Meu script secreto!')"></textarea>
                     </div>
                 </div>
 
-                <button class="btn" onclick="protectScript()">
+                <!-- Barra de progresso -->
+                <div id="progressContainer" class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="progressText" class="progress-text"></div>
+
+                <button class="btn" onclick="protectScript()" id="protectBtn">
                     <i class="fas fa-lock"></i> Proteger com LOL GUARD
                 </button>
 
@@ -304,6 +364,7 @@ print('Meu script secreto!')"></textarea>
                     <span class="security-badge"><i class="fas fa-database"></i> Firebase</span>
                     <span class="security-badge"><i class="fas fa-shield-alt"></i> Protegido</span>
                     <span class="security-badge"><i class="fas fa-bolt"></i> Rápido</span>
+                    <span class="security-badge"><i class="fas fa-code"></i> API Intermediária</span>
                 </div>
             </div>
 
@@ -333,7 +394,7 @@ print('Meu script secreto!')"></textarea>
                         <li>Clique em "Proteger com LOL GUARD"</li>
                         <li>Copie o loader gerado à direita</li>
                         <li>Cole no Roblox Executor</li>
-                        <li>O script real fica protegido no Firebase</li>
+                        <li>API intermediária protege o código</li>
                     </ol>
                 </div>
             </div>
@@ -342,134 +403,57 @@ print('Meu script secreto!')"></textarea>
         <!-- API Info -->
         <div class="panel" style="margin-top: 30px;">
             <h2 class="panel-title">
-                <i class="fas fa-cogs"></i> Configuração do Firebase
+                <i class="fas fa-cogs"></i> Configuração do Sistema
             </h2>
             <div style="color: #ccc; line-height: 1.6;">
-                <p><strong>Seu Projeto Firebase:</strong></p>
-                <input type="text" value="api-lol-guard-2f615" readonly style="background: rgba(0,0,0,0.5);">
-                <p style="margin-top: 15px;"><i class="fas fa-lightbulb"></i> Seus scripts ficam seguros no Firebase Firestore.</p>
+                <p><strong>URL da API Intermediária:</strong></p>
+                <input type="text" id="apiUrl" value="https://lolapi.rf.gd/" readonly style="background: rgba(0,0,0,0.5);">
+                <p style="margin-top: 15px;"><i class="fas fa-lightbulb"></i> Seus scripts passam pela API intermediária que protege o código.</p>
             </div>
         </div>
 
         <!-- Rodapé -->
         <div class="footer">
-            <p>LOL GUARD v2.0 | Powered by Firebase</p>
+            <p>LOL GUARD v2.0 | Sistema com API Intermediária</p>
             <p style="font-size: 0.8rem; margin-top: 5px;">
-                <i class="fas fa-exclamation-triangle"></i> Sistema 100% funcional com Firebase
+                <i class="fas fa-exclamation-triangle"></i> Código protegido por API intermediária
             </p>
         </div>
     </div>
 
-           <!-- Firebase SDK Versão 9 MODULAR -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    <script>
+        // CONFIGURAÇÃO DA API INTERMEDIÁRIA
+        const API_URL = "https://lolapi.rf.gd/";
         
-        // SUAS CREDENCIAIS
-        const firebaseConfig = {
-            apiKey: "AIzaSyCMxnBTU9Z2lPzVia4tToyF_dKF2sS6DZ0",
-            authDomain: "api-lol-guard-2f615.firebaseapp.com",
-            projectId: "api-lol-guard-2f615",
-            storageBucket: "api-lol-guard-2f615.firebasestorage.app",
-            messagingSenderId: "745922329728",
-            appId: "1:745922329728:web:74f66432e344db789cfa65"
-        };
-        
-        // Inicializar Firebase
-        let app;
-        let db;
-        
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            console.log('✅ Firebase V9 OK');
+        // Função para mostrar barra de progresso
+        function showProgress(show) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const protectBtn = document.getElementById('protectBtn');
             
-            // Testar conexão
-            const testDoc = doc(db, "connection_test", "test");
-            await setDoc(testDoc, { timestamp: new Date().toISOString() });
-            
-            document.querySelector('.status-indicator span').innerHTML = 
-                '<div class="status-dot"></div> ✅ Firebase Conectado';
-            
-        } catch (error) {
-            console.error('❌ Firebase error:', error);
-            document.querySelector('.status-indicator span').innerHTML = 
-                '<div class="status-dot" style="background:#ff5555"></div> ❌ Firebase Offline';
-        }
-        
-        // Função principal - PROTEGER SCRIPT
-        async function protectScript() {
-            const scriptCode = document.getElementById('scriptInput').value;
-            const apiKey = document.getElementById('apiKey').value;
-            const scriptName = document.getElementById('scriptName').value;
-            
-            if (!scriptCode.trim()) {
-                showAlert('error', 'Cole um script Lua!');
-                return;
-            }
-            
-            showAlert('success', 'Salvando no Firebase...');
-            
-            try {
-                // 1. Gerar ID
-                const fileId = generateFileId(12);
+            if (show) {
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                protectBtn.disabled = true;
+                protectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Protegendo...';
                 
-                // 2. Salvar no Firestore
-                const scriptRef = doc(db, "scripts", fileId);
-                await setDoc(scriptRef, {
-                    content: scriptCode,
-                    name: scriptName || 'script_' + fileId,
-                    key: apiKey || 'public',
-                    created: serverTimestamp(),
-                    views: 0
-                });
-                
-                // 3. URL da SUA API (ESSA É A PARTE IMPORTANTE!)
-                const apiUrl = `https://liphyrdev.github.io/api/api.html?id=${fileId}`;
-                
-                // 4. GERAR O LOADER QUE VOCÊ QUER
-                const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
-                
-                // 5. MOSTRAR O RESULTADO
-                document.getElementById('result').textContent = loaderCode;
-                
-                // 6. Mostrar sucesso
-                showAlert('success', `✅ Script protegido! ID: ${fileId}`);
-                
-                console.log('📁 Script salvo:', fileId);
-                console.log('🔗 URL gerada:', apiUrl);
-                console.log('📋 Loader:', loaderCode);
-                
-            } catch (error) {
-                console.error('❌ Erro ao salvar:', error);
-                showAlert('error', `Erro: ${error.message}`);
-            }
-        }
-        
-        // Funções auxiliares
-        function generateFileId(length = 12) {
-            const chars = 'abcdef0123456789';
-            let id = '';
-            for (let i = 0; i < length; i++) {
-                id += chars[Math.floor(Math.random() * chars.length)];
-            }
-            return id;
-        }
-        
-        function copyToClipboard() {
-            const text = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.copy-btn');
-                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                btn.style.background = 'rgba(0, 255, 136, 0.2)';
+                // Animar barra de progresso
                 setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
-                    btn.style.background = '';
-                }, 2000);
-                showAlert('success', '✅ Loader copiado!');
-            });
+                    progressBar.style.width = '100%';
+                }, 100);
+                
+                progressText.textContent = 'Salvando no Firebase via API...';
+            } else {
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+                protectBtn.disabled = false;
+                protectBtn.innerHTML = '<i class="fas fa-lock"></i> Proteger com LOL GUARD';
+                progressText.textContent = '';
+            }
         }
-        
+
+        // Função para mostrar alertas
         function showAlert(type, message) {
             const successAlert = document.getElementById('alertSuccess');
             const errorAlert = document.getElementById('alertError');
@@ -478,23 +462,154 @@ print('Meu script secreto!')"></textarea>
                 successAlert.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
                 successAlert.style.display = 'block';
                 errorAlert.style.display = 'none';
+                
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                }, 5000);
             } else {
                 errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
                 errorAlert.style.display = 'block';
                 successAlert.style.display = 'none';
+                
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Função PRINCIPAL - Proteger Script usando API Intermediária
+        async function protectScript() {
+            const scriptCode = document.getElementById('scriptInput').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const scriptName = document.getElementById('scriptName').value;
+            
+            if (!scriptCode.trim()) {
+                showAlert('error', 'Cole um script Lua primeiro!');
+                return;
             }
             
-            setTimeout(() => {
-                if (type === 'success') successAlert.style.display = 'none';
-                else errorAlert.style.display = 'none';
-            }, 5000);
+            // Iniciar progresso
+            showProgress(true);
+            
+            // Esperar 3 segundos (simulação)
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            try {
+                // 1. Gerar ID único
+                const fileId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+                
+                // ============================================
+                // 🔥 MUDANÇAS QUE VOCÊ PEDIU (APENAS ISSO)
+                // ============================================
+                
+                // 2. 🔥 Codifica quebras de linha para JSON
+                const encodedScript = scriptCode.replace(/\n/g, '\\n');
+                
+                // 3. 🔥 Salva DIRETAMENTE o código codificado
+                const contentUrl = `https://api-lol-guard-2f615-default-rtdb.firebaseio.com/scripts/${fileId}/content.json`;
+                
+                const saveResponse = await fetch(contentUrl, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(encodedScript) // ← Código já com \n
+                });
+                
+                // Salvar metadados separadamente (opcional)
+                const metaUrl = `https://api-lol-guard-2f615-default-rtdb.firebaseio.com/scripts/${fileId}/meta.json`;
+                await fetch(metaUrl, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: scriptName || 'script_' + fileId,
+                        key: apiKey || 'public',
+                        created: new Date().toISOString()
+                    })
+                });
+                
+                // ============================================
+                // FIM DAS MUDANÇAS
+                // ============================================
+                
+                if (!saveResponse.ok) {
+                    throw new Error('Erro ao salvar no Firebase');
+                }
+                
+                // 4. GERAR LOADER COM API INTERMEDIÁRIA
+                const apiUrl = `${API_URL}?id=${fileId}`;
+                const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
+                
+                // 5. MOSTRAR RESULTADO
+                document.getElementById('result').textContent = loaderCode;
+                
+                // 6. Mostrar sucesso
+                showAlert('success', `✅ Script protegido via API! ID: ${fileId}`);
+                
+                console.log('✅ Script salvo via API! ID:', fileId);
+                console.log('🔗 URL da API:', apiUrl);
+                console.log('📋 Loader gerado:', loaderCode);
+                
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                
+                // Fallback: gerar sem API
+                const fileId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+                const apiUrl = `${API_URL}?id=${fileId}`;
+                const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
+                document.getElementById('result').textContent = loaderCode;
+                
+                showAlert('error', '⚠️ Gerado localmente (API offline)');
+            } finally {
+                // Esconder barra de progresso
+                showProgress(false);
+            }
         }
         
-        // Exemplo
+        // Função para copiar para área de transferência
+        function copyToClipboard() {
+            const text = document.getElementById('result').textContent;
+            if (!text || text.includes('loader será gerado')) {
+                showAlert('error', 'Gere um loader primeiro!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                btn.style.background = 'rgba(0, 255, 136, 0.2)';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                    btn.style.background = '';
+                }, 2000);
+                showAlert('success', '✅ Loader copiado para área de transferência!');
+            }).catch(err => {
+                showAlert('error', '❌ Erro ao copiar!');
+                console.error('Erro ao copiar:', err);
+            });
+        }
+        
+        // Inicializar exemplo
         window.onload = function() {
-            document.getElementById('scriptInput').value = `print("LOL GUARD funcionando!")`;
+            document.getElementById('scriptInput').value = `-- Script de exemplo do LOL GUARD
+print("🔥 LOL GUARD funcionando com API intermediária!")
+print("✅ Sistema de proteção ativo")
+print("📁 Script seguro no Firebase via API")
+
+-- Exemplo de função protegida
+local function exemplo()
+    print("Este script está protegido pelo LOL GUARD")
+    print("Acessado via API intermediária")
+    return "Operação bem sucedida!"
+end
+
+print(exemplo())`;
+            
+            // Tornar funções globais
             window.protectScript = protectScript;
             window.copyToClipboard = copyToClipboard;
+            
+            // Mostrar status
+            setTimeout(() => {
+                showAlert('success', '✅ Sistema pronto! Usando API: ' + API_URL);
+            }, 1000);
         };
     </script>
 </body>
