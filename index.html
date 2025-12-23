@@ -360,7 +360,7 @@ print('Meu script secreto!')"></textarea>
         </div>
     </div>
 
-        <!-- Firebase SDK Versão 9 MODULAR -->
+           <!-- Firebase SDK Versão 9 MODULAR -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
@@ -375,29 +375,29 @@ print('Meu script secreto!')"></textarea>
             appId: "1:745922329728:web:74f66432e344db789cfa65"
         };
         
-        // Inicializar Firebase CORRETAMENTE
+        // Inicializar Firebase
         let app;
         let db;
         
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log('✅ Firebase V9 inicializado CORRETAMENTE');
+            console.log('✅ Firebase V9 OK');
             
-            // Testar conexão REAL
+            // Testar conexão
             const testDoc = doc(db, "connection_test", "test");
             await setDoc(testDoc, { timestamp: new Date().toISOString() });
             
             document.querySelector('.status-indicator span').innerHTML = 
-                '<div class="status-dot"></div> ✅ Firebase ONLINE';
+                '<div class="status-dot"></div> ✅ Firebase Conectado';
             
         } catch (error) {
-            console.error('❌ ERRO REAL no Firebase:', error);
+            console.error('❌ Firebase error:', error);
             document.querySelector('.status-indicator span').innerHTML = 
-                '<div class="status-dot" style="background:#ff5555"></div> ❌ Firestore Error';
+                '<div class="status-dot" style="background:#ff5555"></div> ❌ Firebase Offline';
         }
         
-        // Função principal - Proteger Script
+        // Função principal - PROTEGER SCRIPT
         async function protectScript() {
             const scriptCode = document.getElementById('scriptInput').value;
             const apiKey = document.getElementById('apiKey').value;
@@ -408,13 +408,13 @@ print('Meu script secreto!')"></textarea>
                 return;
             }
             
-            showAlert('success', 'Salvando...');
+            showAlert('success', 'Salvando no Firebase...');
             
             try {
                 // 1. Gerar ID
                 const fileId = generateFileId(12);
                 
-                // 2. Salvar NO Firestore V9 (CORRETO)
+                // 2. Salvar no Firestore
                 const scriptRef = doc(db, "scripts", fileId);
                 await setDoc(scriptRef, {
                     content: scriptCode,
@@ -424,23 +424,29 @@ print('Meu script secreto!')"></textarea>
                     views: 0
                 });
                 
-                // 3. Gerar URL
+                // 3. URL da SUA API (ESSA É A PARTE IMPORTANTE!)
                 const apiUrl = `https://liphyrdev.github.io/api/api.html?id=${fileId}`;
+                
+                // 4. GERAR O LOADER QUE VOCÊ QUER
                 const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
                 
-                // 4. Mostrar
+                // 5. MOSTRAR O RESULTADO
                 document.getElementById('result').textContent = loaderCode;
-                showAlert('success', `✅ Salvo! ID: ${fileId}`);
                 
-                console.log('✅ Firestore: Documento salvo:', fileId);
+                // 6. Mostrar sucesso
+                showAlert('success', `✅ Script protegido! ID: ${fileId}`);
+                
+                console.log('📁 Script salvo:', fileId);
+                console.log('🔗 URL gerada:', apiUrl);
+                console.log('📋 Loader:', loaderCode);
                 
             } catch (error) {
-                console.error('❌ ERRO ao salvar:', error);
+                console.error('❌ Erro ao salvar:', error);
                 showAlert('error', `Erro: ${error.message}`);
             }
         }
         
-        // Resto das funções mantém IGUAL
+        // Funções auxiliares
         function generateFileId(length = 12) {
             const chars = 'abcdef0123456789';
             let id = '';
@@ -455,36 +461,38 @@ print('Meu script secreto!')"></textarea>
             navigator.clipboard.writeText(text).then(() => {
                 const btn = document.querySelector('.copy-btn');
                 btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                btn.style.background = 'rgba(0, 255, 136, 0.2)';
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                    btn.style.background = '';
                 }, 2000);
-                showAlert('success', '✅ Copiado!');
+                showAlert('success', '✅ Loader copiado!');
             });
         }
         
         function showAlert(type, message) {
-            const success = document.getElementById('alertSuccess');
-            const error = document.getElementById('alertError');
+            const successAlert = document.getElementById('alertSuccess');
+            const errorAlert = document.getElementById('alertError');
             
             if (type === 'success') {
-                success.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-                success.style.display = 'block';
-                error.style.display = 'none';
+                successAlert.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
             } else {
-                error.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-                error.style.display = 'block';
-                success.style.display = 'none';
+                errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
             }
             
             setTimeout(() => {
-                if (type === 'success') success.style.display = 'none';
-                else error.style.display = 'none';
+                if (type === 'success') successAlert.style.display = 'none';
+                else errorAlert.style.display = 'none';
             }, 5000);
         }
         
         // Exemplo
         window.onload = function() {
-            document.getElementById('scriptInput').value = `print("LOL GUARD")`;
+            document.getElementById('scriptInput').value = `print("LOL GUARD funcionando!")`;
             window.protectScript = protectScript;
             window.copyToClipboard = copyToClipboard;
         };
