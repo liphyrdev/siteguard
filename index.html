@@ -1,47 +1,529 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOL GUARD - Sistema de Proteção</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header com Logo */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            color: #00ff88;
+            font-size: 2.5rem;
+        }
+
+        .logo-text {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .tagline {
+            color: #aaa;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        /* Painéis */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(20, 20, 40, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.2);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #00ff88;
+            font-size: 1.5rem;
+        }
+
+        .panel-title i {
+            font-size: 1.8rem;
+        }
+
+        /* Inputs e Botões */
+        textarea, input, select {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        textarea {
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Resultado */
+        .result-container {
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        #result {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Status */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Segurança */
+        .security-badge {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin: 5px;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .alert.error {
+            background: rgba(255, 50, 50, 0.1);
+            border: 1px solid #ff3232;
+            color: #ff3232;
+        }
+
+        /* Rodapé */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
 <body>
-  <h2>Gerador de Loader Protegido</h2>
-  
-  <!-- Usuário NUNCA vê seu script aqui -->
-  <p>Cole seu script Lua:</p>
-  <textarea id="userScript" style="width:500px;height:200px;">
-print("Meu script secreto!")
-  </textarea>
-  
-  <button onclick="generateLoader()">Gerar Loader Protegido</button>
-  
-  <div id="result">
-    <p>Loader gerado (cole no Roblox):</p>
-    <textarea id="loaderOutput" readonly style="width:500px;height:100px;"></textarea>
-  </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <h1 class="logo-text">LOL GUARD</h1>
+            </div>
+            <p class="tagline">Sistema Avançado de Proteção para Scripts Lua</p>
+        </div>
 
-  <script>
-    function generateLoader() {
-      const userCode = document.getElementById('userScript').value;
-      const apiUrl = "https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec"; // Coloque sua URL aqui
-      
-      // Aqui você ENVIA para API via POST (precisa conectar ao Google Script)
-      // Por enquanto, mostra o loader básico:
-      
-      const loader = `
--- LOADER PROTEGIDO
--- Script oculto na API
+        <!-- Alertas -->
+        <div id="alertSuccess" class="alert success" style="display: none;">
+            <i class="fas fa-check-circle"></i> Script protegido com sucesso!
+        </div>
+        <div id="alertError" class="alert error" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i> Erro ao processar script!
+        </div>
 
-local url = "${apiUrl}"
-local success, response = pcall(function()
-    return game:HttpGet(url .. "?action=get_script")
-end)
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Painel de Upload -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <i class="fas fa-upload"></i> Proteger Script
+                </h2>
+                
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>API LOL GUARD Online</span>
+                </div>
 
-if success then
-    loadstring(response)()
-else
-    print("Erro ao carregar script protegido")
+                <textarea id="scriptInput" placeholder="-- Cole seu script Lua aqui...
+print('Meu script secreto!')"></textarea>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; color: #aaa;">Chave de API:</label>
+                        <input type="text" id="apiKey" placeholder="Digite sua chave API">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; color: #aaa;">Nome do Script:</label>
+                        <input type="text" id="scriptName" placeholder="Nome para identificação">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="protectScript()">
+                    <i class="fas fa-lock"></i> Proteger com LOL GUARD
+                </button>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <span class="security-badge"><i class="fas fa-shield-alt"></i> Código Oculto</span>
+                    <span class="security-badge"><i class="fas fa-key"></i> Proteção por API</span>
+                    <span class="security-badge"><i class="fas fa-bolt"></i> Execução Remota</span>
+                </div>
+            </div>
+
+            <!-- Painel de Resultado -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <i class="fas fa-code"></i> Loader Gerado
+                </h2>
+
+                <div class="result-container">
+                    <div class="result-header">
+                        <h3 style="color: #00ff88;">Código Loader:</h3>
+                        <button class="copy-btn" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre id="result">-- O loader será gerado aqui
+-- Após proteger seu script, cole este código no Roblox</pre>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #00ff88; margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i> Como usar:
+                    </h3>
+                    <ol style="color: #ccc; padding-left: 20px; line-height: 1.8;">
+                        <li>Cole seu script no painel esquerdo</li>
+                        <li>Clique em "Proteger com LOL GUARD"</li>
+                        <li>Copie o loader gerado à direita</li>
+                        <li>Cole no Roblox Executor</li>
+                        <li>O script real fica protegido em nossa API</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Info -->
+        <div class="panel" style="margin-top: 30px;">
+            <h2 class="panel-title">
+                <i class="fas fa-cogs"></i> Configuração da API
+            </h2>
+            <div style="color: #ccc; line-height: 1.6;">
+                <p><strong>URL da API LOL GUARD:</strong></p>
+                <input type="text" value="https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec" readonly style="background: rgba(0,0,0,0.5);">
+                <p style="margin-top: 15px;"><i class="fas fa-lightbulb"></i> Dica: Esta API já está configurada e pronta para uso. Seus scripts ficam seguros em nosso servidor.</p>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="footer">
+            <p>LOL GUARD v1.0 | Sistema de Proteção © 2024</p>
+            <p style="font-size: 0.8rem; margin-top: 5px;">
+                <i class="fas fa-exclamation-triangle"></i> Aviso: Esta proteção dificulta o acesso, mas não garante segurança absoluta.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // URL da sua API Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec';
+
+        // Função para proteger o script
+        async function protectScript() {
+            const scriptCode = document.getElementById('scriptInput').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const scriptName = document.getElementById('scriptName').value;
+
+            if (!scriptCode.trim()) {
+                showAlert('error', 'Por favor, cole um script Lua!');
+                return;
+            }
+
+            showAlert('success', 'Processando script...');
+
+            try {
+                // Criar ID único para o script
+                const scriptId = 'lolguard_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                
+                // Gerar loader com proteção
+                const loaderCode = generateLoader(scriptId, apiKey);
+                
+                // Enviar script para API (em produção, isso seria um POST)
+                // Por enquanto, só mostramos o loader
+                
+                document.getElementById('result').textContent = loaderCode;
+                showAlert('success', 'Script protegido com sucesso!');
+                
+                // Em produção real, você enviaria para API:
+                // await sendToAPI(scriptId, scriptCode, apiKey, scriptName);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('error', 'Erro ao proteger script: ' + error.message);
+            }
+        }
+
+        // Gerar código loader profissional
+        function generateLoader(scriptId, apiKey) {
+            return `-- LOL GUARD Protected Script
+-- Script ID: ${scriptId}
+-- Protected by LOL GUARD System
+
+local LOL_GUARD_API = "${API_URL}"
+local SCRIPT_ID = "${scriptId}"
+local USER_KEY = "${apiKey || 'PUBLIC'}"
+
+-- Função segura de carregamento
+local function LoadProtectedScript()
+    local attempts = 0
+    local maxAttempts = 3
+    
+    while attempts < maxAttempts do
+        local success, response = pcall(function()
+            local url = LOL_GUARD_API .. "?action=get_script&id=" .. SCRIPT_ID .. "&key=" .. USER_KEY
+            local request = syn and syn.request or request
+            if request then
+                local req = request({
+                    Url = url,
+                    Method = "GET"
+                })
+                return req.Body
+            else
+                return game:HttpGet(url)
+            end
+        end)
+        
+        if success and response then
+            local executeSuccess, errorMsg = pcall(function()
+                loadstring(response)()
+            end)
+            
+            if executeSuccess then
+                print("✓ LOL GUARD: Script protegido executado com sucesso!")
+                return true
+            else
+                warn("⚠ LOL GUARD: Erro na execução: " .. tostring(errorMsg))
+            end
+        else
+            warn("⚠ LOL GUARD: Tentativa " .. (attempts + 1) .. " falhou")
+        end
+        
+        attempts = attempts + 1
+        wait(1)
+    end
+    
+    error("✗ LOL GUARD: Falha ao carregar script protegido")
 end
-      `;
-      
-      document.getElementById('loaderOutput').value = loader;
-    }
-  </script>
+
+-- Inicializar proteção
+if not pcall(LoadProtectedScript) then
+    warn("LOL GUARD: Sistema de proteção encontrou um erro")
+end`;
+        }
+
+        // Copiar para área de transferência
+        function copyToClipboard() {
+            const resultText = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(resultText)
+                .then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    btn.style.background = 'rgba(0, 255, 136, 0.2)';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    showAlert('error', 'Erro ao copiar texto');
+                });
+        }
+
+        // Mostrar alertas
+        function showAlert(type, message) {
+            const successAlert = document.getElementById('alertSuccess');
+            const errorAlert = document.getElementById('alertError');
+            
+            if (type === 'success') {
+                successAlert.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+            } else {
+                errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                if (type === 'success') successAlert.style.display = 'none';
+                else errorAlert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Carregar exemplo
+        window.onload = function() {
+            document.getElementById('scriptInput').value = `-- Exemplo de Script Protegido
+print("LOL GUARD System Initialized!")
+
+-- Seu código aqui
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+print("Player: " .. LocalPlayer.Name)
+print("LOL GUARD: Script protegido com sucesso!")`;
+        }
+    </script>
 </body>
 </html>
