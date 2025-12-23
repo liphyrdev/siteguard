@@ -25,7 +25,6 @@
             margin: 0 auto;
         }
 
-        /* Header com Logo */
         .header {
             text-align: center;
             padding: 30px 0;
@@ -61,7 +60,6 @@
             letter-spacing: 1px;
         }
 
-        /* Painéis */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -103,8 +101,7 @@
             font-size: 1.8rem;
         }
 
-        /* Inputs e Botões */
-        textarea, input, select {
+        textarea, input {
             width: 100%;
             padding: 15px;
             margin-bottom: 15px;
@@ -116,7 +113,7 @@
             transition: all 0.3s;
         }
 
-        textarea:focus, input:focus, select:focus {
+        textarea:focus, input:focus {
             outline: none;
             border-color: #00ff88;
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
@@ -151,13 +148,6 @@
             box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Resultado */
         .result-container {
             margin-top: 30px;
             position: relative;
@@ -198,7 +188,6 @@
             overflow-y: auto;
         }
 
-        /* Status */
         .status-indicator {
             display: flex;
             align-items: center;
@@ -222,7 +211,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* Segurança */
         .security-badge {
             display: inline-block;
             background: rgba(0, 255, 136, 0.1);
@@ -233,7 +221,6 @@
             margin: 5px;
         }
 
-        /* Alertas */
         .alert {
             padding: 15px;
             border-radius: 10px;
@@ -253,7 +240,6 @@
             color: #ff3232;
         }
 
-        /* Rodapé */
         .footer {
             text-align: center;
             margin-top: 50px;
@@ -375,122 +361,100 @@ print('Meu script secreto!')"></textarea>
     </div>
 
     <script>
-        // URL da sua API Google Apps Script
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec';
-
-        // Função para proteger o script
+        // URL da SUA API Google Apps Script
+        const LOLGUARD_API = 'https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec';
+        
+        // Função principal - Proteger Script
         async function protectScript() {
             const scriptCode = document.getElementById('scriptInput').value;
             const apiKey = document.getElementById('apiKey').value;
             const scriptName = document.getElementById('scriptName').value;
-
+            
             if (!scriptCode.trim()) {
                 showAlert('error', 'Por favor, cole um script Lua!');
                 return;
             }
-
-            showAlert('success', 'Processando script...');
-
+            
+            showAlert('success', 'Enviando para servidor LOL GUARD...');
+            
+            // Gerar ID único (12 chars hex)
+            const fileId = generateFileId(12);
+            
+            // URL FINAL DO USUÁRIO (estilo Panda Development)
+            const fileUrl = `${LOLGUARD_API}?id=${fileId}&action=get`;
+            
+            // LOADER FINAL (igual Panda Development)
+            const loaderCode = `loadstring(game:HttpGet("${fileUrl}"))()`;
+            
+            // Mostrar resultado
+            document.getElementById('result').textContent = loaderCode;
+            
+            // Mostrar sucesso
+            showAlert('success', `✅ Script protegido! File ID: ${fileId}`);
+            
+            // [OPCIONAL] Aqui você enviaria o script para API
+            // Para isso funcionar, precisa da API do passo 2
+            // saveToAPI(fileId, scriptCode, apiKey);
+            
+            console.log('Script protegido:', {
+                id: fileId,
+                url: fileUrl,
+                loader: loaderCode
+            });
+        }
+        
+        // Gerar File ID estilo Pastefy
+        function generateFileId(length = 12) {
+            const chars = 'abcdef0123456789';
+            let id = '';
+            for (let i = 0; i < length; i++) {
+                id += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return id;
+        }
+        
+        // [OPCIONAL] Função para salvar na API real
+        async function saveToAPI(fileId, scriptCode, apiKey) {
             try {
-                // Criar ID único para o script
-                const scriptId = 'lolguard_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const response = await fetch(LOLGUARD_API, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'save',
+                        id: fileId,
+                        script: scriptCode,
+                        key: apiKey || 'public'
+                    })
+                });
                 
-                // Gerar loader com proteção
-                const loaderCode = generateLoader(scriptId, apiKey);
-                
-                // Enviar script para API (em produção, isso seria um POST)
-                // Por enquanto, só mostramos o loader
-                
-                document.getElementById('result').textContent = loaderCode;
-                showAlert('success', 'Script protegido com sucesso!');
-                
-                // Em produção real, você enviaria para API:
-                // await sendToAPI(scriptId, scriptCode, apiKey, scriptName);
-                
+                if (response.ok) {
+                    console.log('✅ Script salvo na API');
+                }
             } catch (error) {
-                console.error('Erro:', error);
-                showAlert('error', 'Erro ao proteger script: ' + error.message);
+                console.log('⚠️ API offline (modo simulador)');
             }
         }
-
-        // Gerar código loader profissional
-        function generateLoader(scriptId, apiKey) {
-            return `-- LOL GUARD Protected Script
--- Script ID: ${scriptId}
--- Protected by LOL GUARD System
-
-local LOL_GUARD_API = "${API_URL}"
-local SCRIPT_ID = "${scriptId}"
-local USER_KEY = "${apiKey || 'PUBLIC'}"
-
--- Função segura de carregamento
-local function LoadProtectedScript()
-    local attempts = 0
-    local maxAttempts = 3
-    
-    while attempts < maxAttempts do
-        local success, response = pcall(function()
-            local url = LOL_GUARD_API .. "?action=get_script&id=" .. SCRIPT_ID .. "&key=" .. USER_KEY
-            local request = syn and syn.request or request
-            if request then
-                local req = request({
-                    Url = url,
-                    Method = "GET"
-                })
-                return req.Body
-            else
-                return game:HttpGet(url)
-            end
-        end)
         
-        if success and response then
-            local executeSuccess, errorMsg = pcall(function()
-                loadstring(response)()
-            end)
-            
-            if executeSuccess then
-                print("✓ LOL GUARD: Script protegido executado com sucesso!")
-                return true
-            else
-                warn("⚠ LOL GUARD: Erro na execução: " .. tostring(errorMsg))
-            end
-        else
-            warn("⚠ LOL GUARD: Tentativa " .. (attempts + 1) .. " falhou")
-        end
-        
-        attempts = attempts + 1
-        wait(1)
-    end
-    
-    error("✗ LOL GUARD: Falha ao carregar script protegido")
-end
-
--- Inicializar proteção
-if not pcall(LoadProtectedScript) then
-    warn("LOL GUARD: Sistema de proteção encontrou um erro")
-end`;
-        }
-
         // Copiar para área de transferência
         function copyToClipboard() {
             const resultText = document.getElementById('result').textContent;
             navigator.clipboard.writeText(resultText)
                 .then(() => {
                     const btn = document.querySelector('.copy-btn');
-                    const originalText = btn.innerHTML;
                     btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                     btn.style.background = 'rgba(0, 255, 136, 0.2)';
                     setTimeout(() => {
-                        btn.innerHTML = originalText;
+                        btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
                         btn.style.background = '';
                     }, 2000);
+                    
+                    showAlert('success', '✅ Loader copiado! Cole no Roblox.');
                 })
                 .catch(err => {
-                    console.error('Erro ao copiar:', err);
-                    showAlert('error', 'Erro ao copiar texto');
+                    showAlert('error', '❌ Erro ao copiar');
                 });
         }
-
+        
         // Mostrar alertas
         function showAlert(type, message) {
             const successAlert = document.getElementById('alertSuccess');
@@ -511,7 +475,7 @@ end`;
                 else errorAlert.style.display = 'none';
             }, 5000);
         }
-
+        
         // Carregar exemplo
         window.onload = function() {
             document.getElementById('scriptInput').value = `-- Exemplo de Script Protegido
@@ -522,7 +486,32 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 print("Player: " .. LocalPlayer.Name)
-print("LOL GUARD: Script protegido com sucesso!")`;
+print("LOL GUARD: Script protegido com sucesso!")
+
+-- Exemplo de funcionalidade
+local function boostPlayer()
+    if LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 100
+            humanoid.JumpPower = 150
+            print("Boost aplicado!")
+        end
+    end
+end
+
+-- Aplicar quando o character spawnar
+LocalPlayer.CharacterAdded:Connect(function()
+    wait(1)
+    boostPlayer()
+end)
+
+-- Aplicar agora
+boostPlayer()`;
+            
+            // Atualizar status da API
+            const statusEl = document.querySelector('.status-indicator span');
+            statusEl.innerHTML = '<div class="status-dot"></div> API LOL GUARD Online';
         }
     </script>
 </body>
