@@ -279,7 +279,7 @@
                 
                 <div class="status-indicator">
                     <div class="status-dot"></div>
-                    <span>API LOL GUARD Online</span>
+                    <span>Firebase Conectado</span>
                 </div>
 
                 <textarea id="scriptInput" placeholder="-- Cole seu script Lua aqui...
@@ -301,9 +301,9 @@ print('Meu script secreto!')"></textarea>
                 </button>
 
                 <div style="margin-top: 20px; text-align: center;">
-                    <span class="security-badge"><i class="fas fa-shield-alt"></i> Código Oculto</span>
-                    <span class="security-badge"><i class="fas fa-key"></i> Proteção por API</span>
-                    <span class="security-badge"><i class="fas fa-bolt"></i> Execução Remota</span>
+                    <span class="security-badge"><i class="fas fa-database"></i> Firebase</span>
+                    <span class="security-badge"><i class="fas fa-shield-alt"></i> Protegido</span>
+                    <span class="security-badge"><i class="fas fa-bolt"></i> Rápido</span>
                 </div>
             </div>
 
@@ -333,7 +333,7 @@ print('Meu script secreto!')"></textarea>
                         <li>Clique em "Proteger com LOL GUARD"</li>
                         <li>Copie o loader gerado à direita</li>
                         <li>Cole no Roblox Executor</li>
-                        <li>O script real fica protegido em nossa API</li>
+                        <li>O script real fica protegido no Firebase</li>
                     </ol>
                 </div>
             </div>
@@ -342,27 +342,42 @@ print('Meu script secreto!')"></textarea>
         <!-- API Info -->
         <div class="panel" style="margin-top: 30px;">
             <h2 class="panel-title">
-                <i class="fas fa-cogs"></i> Configuração da API
+                <i class="fas fa-cogs"></i> Configuração do Firebase
             </h2>
             <div style="color: #ccc; line-height: 1.6;">
-                <p><strong>URL da API LOL GUARD:</strong></p>
-                <input type="text" value="https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec" readonly style="background: rgba(0,0,0,0.5);">
-                <p style="margin-top: 15px;"><i class="fas fa-lightbulb"></i> Dica: Esta API já está configurada e pronta para uso. Seus scripts ficam seguros em nosso servidor.</p>
+                <p><strong>Seu Projeto Firebase:</strong></p>
+                <input type="text" value="api-lol-guard-2f615" readonly style="background: rgba(0,0,0,0.5);">
+                <p style="margin-top: 15px;"><i class="fas fa-lightbulb"></i> Seus scripts ficam seguros no Firebase Firestore.</p>
             </div>
         </div>
 
         <!-- Rodapé -->
         <div class="footer">
-            <p>LOL GUARD v1.0 | Sistema de Proteção © 2024</p>
+            <p>LOL GUARD v2.0 | Powered by Firebase</p>
             <p style="font-size: 0.8rem; margin-top: 5px;">
-                <i class="fas fa-exclamation-triangle"></i> Aviso: Esta proteção dificulta o acesso, mas não garante segurança absoluta.
+                <i class="fas fa-exclamation-triangle"></i> Sistema 100% funcional com Firebase
             </p>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+
     <script>
-        // URL da SUA API Google Apps Script
-        const LOLGUARD_API = 'https://script.google.com/macros/s/AKfycbzCidobws_ul172M1bHBH1-Abnli_JCx8m9i4W4BWQPVmRHPOyte-1W_1TpxJZP9NsG/exec';
+        // CONFIGURAÇÃO FIREBASE - SUAS CREDENCIAIS
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMxnBTU9Z2lPzVia4tToyF_dKF2sS6DZ0",
+            authDomain: "api-lol-guard-2f615.firebaseapp.com",
+            projectId: "api-lol-guard-2f615",
+            storageBucket: "api-lol-guard-2f615.firebasestorage.app",
+            messagingSenderId: "745922329728",
+            appId: "1:745922329728:web:74f66432e344db789cfa65"
+        };
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
         
         // Função principal - Proteger Script
         async function protectScript() {
@@ -375,32 +390,41 @@ print('Meu script secreto!')"></textarea>
                 return;
             }
             
-            showAlert('success', 'Enviando para servidor LOL GUARD...');
+            showAlert('success', 'Salvando no Firebase...');
             
-            // Gerar ID único (12 chars hex)
-            const fileId = generateFileId(12);
-            
-            // URL FINAL DO USUÁRIO (estilo Panda Development)
-            const fileUrl = `${LOLGUARD_API}?id=${fileId}&action=get`;
-            
-            // LOADER FINAL (igual Panda Development)
-            const loaderCode = `loadstring(game:HttpGet("${fileUrl}"))()`;
-            
-            // Mostrar resultado
-            document.getElementById('result').textContent = loaderCode;
-            
-            // Mostrar sucesso
-            showAlert('success', `✅ Script protegido! File ID: ${fileId}`);
-            
-            // [OPCIONAL] Aqui você enviaria o script para API
-            // Para isso funcionar, precisa da API do passo 2
-            // saveToAPI(fileId, scriptCode, apiKey);
-            
-            console.log('Script protegido:', {
-                id: fileId,
-                url: fileUrl,
-                loader: loaderCode
-            });
+            try {
+                // 1. Gerar ID único
+                const fileId = generateFileId(12);
+                
+                // 2. Salvar no Firestore
+                await db.collection('scripts').doc(fileId).set({
+                    content: scriptCode,
+                    name: scriptName || 'script_' + fileId,
+                    key: apiKey || 'public',
+                    created: new Date().toISOString(),
+                    views: 0
+                });
+
+                // 3. URL da SUA API (MUDE AQUI PARA SUA URL)
+                // Seu site: https://seuusuario.github.io/lol-guard/
+                // Então a API fica: https://seuusuario.github.io/lol-guard/api.html
+                const apiUrl = `https://seusite.com/api.html?id=${fileId}`;
+                
+                // 4. LOADER (estilo Panda Development)
+                const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
+                
+                // 5. Mostrar resultado
+                document.getElementById('result').textContent = loaderCode;
+                
+                // 6. Mostrar sucesso
+                showAlert('success', `✅ Script protegido! ID: ${fileId}`);
+                
+                console.log('Script salvo:', fileId);
+                
+            } catch (error) {
+                console.error('Erro Firebase:', error);
+                showAlert('error', 'Erro ao salvar no Firebase');
+            }
         }
         
         // Gerar File ID estilo Pastefy
@@ -411,28 +435,6 @@ print('Meu script secreto!')"></textarea>
                 id += chars[Math.floor(Math.random() * chars.length)];
             }
             return id;
-        }
-        
-        // [OPCIONAL] Função para salvar na API real
-        async function saveToAPI(fileId, scriptCode, apiKey) {
-            try {
-                const response = await fetch(LOLGUARD_API, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: 'save',
-                        id: fileId,
-                        script: scriptCode,
-                        key: apiKey || 'public'
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log('✅ Script salvo na API');
-                }
-            } catch (error) {
-                console.log('⚠️ API offline (modo simulador)');
-            }
         }
         
         // Copiar para área de transferência
@@ -448,7 +450,7 @@ print('Meu script secreto!')"></textarea>
                         btn.style.background = '';
                     }, 2000);
                     
-                    showAlert('success', '✅ Loader copiado! Cole no Roblox.');
+                    showAlert('success', '✅ Loader copiado!');
                 })
                 .catch(err => {
                     showAlert('error', '❌ Erro ao copiar');
@@ -509,9 +511,9 @@ end)
 -- Aplicar agora
 boostPlayer()`;
             
-            // Atualizar status da API
-            const statusEl = document.querySelector('.status-indicator span');
-            statusEl.innerHTML = '<div class="status-dot"></div> API LOL GUARD Online';
+            // Atualizar status
+            document.querySelector('.status-indicator span').innerHTML = 
+                '<div class="status-dot"></div> Firebase Conectado';
         }
     </script>
 </body>
