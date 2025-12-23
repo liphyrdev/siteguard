@@ -360,12 +360,12 @@ print('Meu script secreto!')"></textarea>
         </div>
     </div>
 
-        <!-- Firebase SDK -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-
+    
     <script>
-        // CONFIGURAÇÃO FIREBASE - CREDENCIAIS CORRETAS
+        // SUAS CREDENCIAIS FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCMxnBTU9Z2lPzVia4tToyF_dKF2sS6DZ0",
             authDomain: "api-lol-guard-2f615.firebaseapp.com",
@@ -374,7 +374,7 @@ print('Meu script secreto!')"></textarea>
             messagingSenderId: "745922329728",
             appId: "1:745922329728:web:74f66432e344db789cfa65"
         };
-
+        
         // Inicializar Firebase
         let db;
         try {
@@ -383,6 +383,8 @@ print('Meu script secreto!')"></textarea>
             console.log('✅ Firebase inicializado');
         } catch (error) {
             console.error('❌ Erro ao inicializar Firebase:', error);
+            document.querySelector('.status-indicator span').innerHTML = 
+                '<div class="status-dot"></div> ❌ Firebase Offline';
         }
         
         // Função principal - Proteger Script
@@ -399,13 +401,13 @@ print('Meu script secreto!')"></textarea>
             showAlert('success', 'Salvando no Firebase...');
             
             try {
-                // 1. Gerar ID único
-                const fileId = generateFileId(12);
-                
-                // 2. Verificar se Firebase está inicializado
+                // 1. Verificar se Firebase está inicializado
                 if (!db) {
                     throw new Error('Firebase não inicializado');
                 }
+                
+                // 2. Gerar ID único (12 chars hex)
+                const fileId = generateFileId(12);
                 
                 // 3. Salvar no Firestore
                 await db.collection('scripts').doc(fileId).set({
@@ -416,9 +418,9 @@ print('Meu script secreto!')"></textarea>
                     views: 0
                 });
 
-                // 4. URL da SUA API (MUDE AQUI DEPOIS!)
-                // Exemplo: https://seuusuario.github.io/lol-guard/api.html
-                const apiUrl = `https://liphyrdev.github.io/api/`;
+                // 4. URL da SUA API (AJUSTE AQUI!)
+                // Exemplo: https://liphyrdev.github.io/lol-guard/api.html
+                const apiUrl = `https://liphyrdev.github.io/api/?id=${fileId}`;
                 
                 // 5. LOADER (estilo Panda Development)
                 const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
@@ -434,13 +436,6 @@ print('Meu script secreto!')"></textarea>
             } catch (error) {
                 console.error('❌ Erro detalhado:', error);
                 showAlert('error', `Erro: ${error.message}`);
-                
-                // Modo fallback - simulação
-                const fallbackId = generateFileId(12);
-                const fallbackUrl = `https://lolguard-api.netlify.app/api.html?id=${fallbackId}`;
-                const fallbackLoader = `loadstring(game:HttpGet("${fallbackUrl}"))()`;
-                document.getElementById('result').textContent = fallbackLoader;
-                showAlert('success', 'Usando modo simulador (ID: ' + fallbackId + ')');
             }
         }
         
@@ -467,10 +462,10 @@ print('Meu script secreto!')"></textarea>
                         btn.style.background = '';
                     }, 2000);
                     
-                    showAlert('success', '✅ Loader copiado!');
+                    showAlert('success', '✅ Loader copiado para área de transferência!');
                 })
                 .catch(err => {
-                    showAlert('error', '❌ Erro ao copiar');
+                    showAlert('error', '❌ Erro ao copiar texto');
                 });
         }
         
@@ -495,8 +490,8 @@ print('Meu script secreto!')"></textarea>
             }, 5000);
         }
         
-        // Testar conexão ao carregar
-        window.onload = async function() {
+        // Carregar exemplo
+        window.onload = function() {
             document.getElementById('scriptInput').value = `-- Exemplo de Script Protegido
 print("LOL GUARD System Initialized!")
 
@@ -505,28 +500,33 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 print("Player: " .. LocalPlayer.Name)
-print("LOL GUARD: Script protegido com sucesso!")`;
+print("LOL GUARD: Script protegido com sucesso!")
+
+-- Exemplo de funcionalidade
+local function boostPlayer()
+    if LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 100
+            humanoid.JumpPower = 150
+            print("Boost aplicado!")
+        end
+    end
+end
+
+-- Aplicar quando o character spawnar
+LocalPlayer.CharacterAdded:Connect(function()
+    wait(1)
+    boostPlayer()
+end)
+
+-- Aplicar agora
+boostPlayer()`;
             
-            try {
-                // Testar conexão com Firebase
-                if (db) {
-                    // Criar documento de teste
-                    await db.collection('test').doc('connection').set({
-                        test: true,
-                        timestamp: new Date().toISOString()
-                    });
-                    
-                    document.querySelector('.status-indicator span').innerHTML = 
-                        '<div class="status-dot"></div> ✅ Firebase Conectado';
-                    console.log('✅ Teste de conexão bem-sucedido');
-                } else {
-                    document.querySelector('.status-indicator span').innerHTML = 
-                        '<div class="status-dot"></div> ⚠️ Modo Simulador';
-                }
-            } catch (error) {
-                console.warn('⚠️ Modo simulador ativado');
+            // Testar conexão com Firebase
+            if (db) {
                 document.querySelector('.status-indicator span').innerHTML = 
-                    '<div class="status-dot"></div> ⚠️ Modo Simulador (Firebase offline)';
+                    '<div class="status-dot"></div> ✅ Firebase Conectado';
             }
         }
     </script>
