@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Gerador de Loader Protegido</h2>
+  
+  <!-- Usuário NUNCA vê seu script aqui -->
+  <p>Cole seu script Lua:</p>
+  <textarea id="userScript" style="width:500px;height:200px;">
+print("Meu script secreto!")
+  </textarea>
+  
+  <button onclick="generateLoader()">Gerar Loader Protegido</button>
+  
+  <div id="result">
+    <p>Loader gerado (cole no Roblox):</p>
+    <textarea id="loaderOutput" readonly style="width:500px;height:100px;"></textarea>
+  </div>
+
+  <script>
+    function generateLoader() {
+      const userCode = document.getElementById('userScript').value;
+      const apiUrl = "SUA_URL_DO_GOOGLE_SCRIPT"; // Coloque sua URL aqui
+      
+      // Aqui você ENVIA para API via POST (precisa conectar ao Google Script)
+      // Por enquanto, mostra o loader básico:
+      
+      const loader = `
+-- LOADER PROTEGIDO
+-- Script oculto na API
+
+local url = "${apiUrl}"
+local success, response = pcall(function()
+    return game:HttpGet(url .. "?action=get_script")
+end)
+
+if success then
+    loadstring(response)()
+else
+    print("Erro ao carregar script protegido")
+end
+      `;
+      
+      document.getElementById('loaderOutput').value = loader;
+    }
+  </script>
+</body>
+</html>
