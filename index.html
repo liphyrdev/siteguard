@@ -360,13 +360,12 @@ print('Meu script secreto!')"></textarea>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-        <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-    
-    <script>
-        // SUAS CREDENCIAIS FIREBASE
+        <!-- Firebase SDK Versão 9 MODULAR -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        
+        // SUAS CREDENCIAIS
         const firebaseConfig = {
             apiKey: "AIzaSyCMxnBTU9Z2lPzVia4tToyF_dKF2sS6DZ0",
             authDomain: "api-lol-guard-2f615.firebaseapp.com",
@@ -376,48 +375,26 @@ print('Meu script secreto!')"></textarea>
             appId: "1:745922329728:web:74f66432e344db789cfa65"
         };
         
-        // Variáveis globais
-        let db = null;
-        let firebaseReady = false;
+        // Inicializar Firebase CORRETAMENTE
+        let app;
+        let db;
         
-        // Inicializar Firebase
-        function initializeFirebase() {
-            try {
-                // Verificar se já existe
-                if (firebase.apps.length === 0) {
-                    const app = firebase.initializeApp(firebaseConfig);
-                    db = firebase.firestore();
-                    
-                    // Testar conexão
-                    db.collection('test').doc('ping').set({
-                        timestamp: new Date().toISOString()
-                    }).then(() => {
-                        firebaseReady = true;
-                        console.log('✅ Firebase conectado!');
-                        updateStatus('✅ Firebase Conectado', '#00ff88');
-                    }).catch(error => {
-                        console.warn('⚠️ Firebase em modo simulado');
-                        firebaseReady = false;
-                        updateStatus('⚠️ Modo Simulador', '#ffaa00');
-                    });
-                } else {
-                    db = firebase.firestore();
-                    firebaseReady = true;
-                    updateStatus('✅ Firebase Conectado', '#00ff88');
-                }
-            } catch (error) {
-                console.error('❌ Erro Firebase:', error);
-                firebaseReady = false;
-                updateStatus('❌ Firebase Offline', '#ff3232');
-            }
-        }
-        
-        // Atualizar status
-        function updateStatus(text, color) {
-            const statusEl = document.querySelector('.status-indicator span');
-            if (statusEl) {
-                statusEl.innerHTML = `<div class="status-dot" style="background: ${color}"></div> ${text}`;
-            }
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log('✅ Firebase V9 inicializado CORRETAMENTE');
+            
+            // Testar conexão REAL
+            const testDoc = doc(db, "connection_test", "test");
+            await setDoc(testDoc, { timestamp: new Date().toISOString() });
+            
+            document.querySelector('.status-indicator span').innerHTML = 
+                '<div class="status-dot"></div> ✅ Firebase ONLINE';
+            
+        } catch (error) {
+            console.error('❌ ERRO REAL no Firebase:', error);
+            document.querySelector('.status-indicator span').innerHTML = 
+                '<div class="status-dot" style="background:#ff5555"></div> ❌ Firestore Error';
         }
         
         // Função principal - Proteger Script
@@ -427,48 +404,43 @@ print('Meu script secreto!')"></textarea>
             const scriptName = document.getElementById('scriptName').value;
             
             if (!scriptCode.trim()) {
-                showAlert('error', 'Por favor, cole um script Lua!');
+                showAlert('error', 'Cole um script Lua!');
                 return;
             }
             
-            showAlert('success', 'Processando...');
+            showAlert('success', 'Salvando...');
             
-            // Gerar ID único
-            const fileId = generateFileId(12);
-            
-            // URL da API
-            const apiUrl = `https://liphyrdev.github.io/api/api.html?id=${fileId}`;
-            
-            // SE Firebase estiver funcionando
-            if (firebaseReady && db) {
-                try {
-                    await db.collection('scripts').doc(fileId).set({
-                        content: scriptCode,
-                        name: scriptName || 'script_' + fileId,
-                        key: apiKey || 'public',
-                        created: new Date().toISOString(),
-                        views: 0
-                    });
-                    
-                    console.log('✅ Script salvo no Firebase:', fileId);
-                    showAlert('success', `✅ Script protegido! ID: ${fileId}`);
-                    
-                } catch (error) {
-                    console.warn('⚠️ Salvando localmente:', error);
-                    showAlert('success', `✅ Script protegido (modo local)! ID: ${fileId}`);
-                }
-            } else {
-                // Modo local (sem Firebase)
-                console.log('📝 Salvando localmente (ID):', fileId);
-                showAlert('success', `✅ Script protegido (modo local)! ID: ${fileId}`);
+            try {
+                // 1. Gerar ID
+                const fileId = generateFileId(12);
+                
+                // 2. Salvar NO Firestore V9 (CORRETO)
+                const scriptRef = doc(db, "scripts", fileId);
+                await setDoc(scriptRef, {
+                    content: scriptCode,
+                    name: scriptName || 'script_' + fileId,
+                    key: apiKey || 'public',
+                    created: serverTimestamp(),
+                    views: 0
+                });
+                
+                // 3. Gerar URL
+                const apiUrl = `https://liphyrdev.github.io/api/api.html?id=${fileId}`;
+                const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
+                
+                // 4. Mostrar
+                document.getElementById('result').textContent = loaderCode;
+                showAlert('success', `✅ Salvo! ID: ${fileId}`);
+                
+                console.log('✅ Firestore: Documento salvo:', fileId);
+                
+            } catch (error) {
+                console.error('❌ ERRO ao salvar:', error);
+                showAlert('error', `Erro: ${error.message}`);
             }
-            
-            // Gerar LOADER (sempre funciona)
-            const loaderCode = `loadstring(game:HttpGet("${apiUrl}"))()`;
-            document.getElementById('result').textContent = loaderCode;
         }
         
-        // Gerar File ID
+        // Resto das funções mantém IGUAL
         function generateFileId(length = 12) {
             const chars = 'abcdef0123456789';
             let id = '';
@@ -478,61 +450,43 @@ print('Meu script secreto!')"></textarea>
             return id;
         }
         
-        // Copiar para área de transferência
         function copyToClipboard() {
-            const resultText = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(resultText)
-                .then(() => {
-                    const btn = document.querySelector('.copy-btn');
-                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                    btn.style.background = 'rgba(0, 255, 136, 0.2)';
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
-                        btn.style.background = '';
-                    }, 2000);
-                    
-                    showAlert('success', '✅ Loader copiado!');
-                })
-                .catch(err => {
-                    showAlert('error', '❌ Erro ao copiar');
-                });
+            const text = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                }, 2000);
+                showAlert('success', '✅ Copiado!');
+            });
         }
         
-        // Mostrar alertas
         function showAlert(type, message) {
-            const successAlert = document.getElementById('alertSuccess');
-            const errorAlert = document.getElementById('alertError');
+            const success = document.getElementById('alertSuccess');
+            const error = document.getElementById('alertError');
             
             if (type === 'success') {
-                successAlert.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-                successAlert.style.display = 'block';
-                errorAlert.style.display = 'none';
+                success.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                success.style.display = 'block';
+                error.style.display = 'none';
             } else {
-                errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-                errorAlert.style.display = 'block';
-                successAlert.style.display = 'none';
+                error.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                error.style.display = 'block';
+                success.style.display = 'none';
             }
             
             setTimeout(() => {
-                if (type === 'success') successAlert.style.display = 'none';
-                else errorAlert.style.display = 'none';
+                if (type === 'success') success.style.display = 'none';
+                else error.style.display = 'none';
             }, 5000);
         }
         
-        // Inicializar quando carregar
+        // Exemplo
         window.onload = function() {
-            document.getElementById('scriptInput').value = `-- Exemplo de Script Protegido
-print("LOL GUARD System Initialized!")
-
--- Seu código aqui
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-print("Player: " .. LocalPlayer.Name)
-print("LOL GUARD: Script protegido com sucesso!")`;
-            
-            // Inicializar Firebase
-            initializeFirebase();
+            document.getElementById('scriptInput').value = `print("LOL GUARD")`;
+            window.protectScript = protectScript;
+            window.copyToClipboard = copyToClipboard;
         };
     </script>
 </body>
