@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    
+    <script>
+        // SUAS CREDENCIAIS FIREBASE AQUI (MESMAS DO SEU SITE)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMxnBTU9Z2lPzVia4tToyF_dKF2sS6DZ0",
+            authDomain: "api-lol-guard-2f615.firebaseapp.com",
+            projectId: "api-lol-guard-2f615",
+            storageBucket: "api-lol-guard-2f615.firebasestorage.app",
+            messagingSenderId: "745922329728",
+            appId: "1:745922329728:web:74f66432e344db789cfa65"
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Função para servir scripts
+        async function serveScript() {
+            // Pegar ID da URL: api.html?id=abc123
+            const urlParams = new URLSearchParams(window.location.search);
+            const scriptId = urlParams.get('id');
+            
+            if (!scriptId) {
+                document.body.textContent = 'Erro: ID não fornecido';
+                return;
+            }
+            
+            try {
+                // Buscar script no Firestore
+                const doc = await db.collection('scripts').doc(scriptId).get();
+                
+                if (doc.exists) {
+                    const scriptData = doc.data();
+                    // Retornar o código Lua puro
+                    document.body.textContent = scriptData.content;
+                } else {
+                    document.body.textContent = 'Script não encontrado';
+                }
+            } catch (error) {
+                document.body.textContent = 'Erro ao carregar script';
+            }
+        }
+        
+        // Executar quando carregar
+        window.onload = serveScript;
+    </script>
+</head>
+<body>
+    <!-- O script Lua aparecerá aqui -->
+</body>
+</html>
